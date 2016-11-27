@@ -19,10 +19,10 @@ def test(test_data, clf, count_vect):
     predicted = clf.predict(X_new_counts)
     cnf_matrix = confusion_matrix(test_data.target, predicted)
     recall = recall_score(test_data.target, predicted, average='weighted')
-    precision_score = precision_score(test_data.target, predicted, average='weighted')
+    precision = precision_score(test_data.target, predicted, average='weighted')
     accuracy = accuracy_score(test_data.target, predicted, normalize=True)
     error_rate = 1 - accuracy
-    return predicted, cnf_matrix, recall, precision_score, accuracy, error_rate
+    return predicted, cnf_matrix, recall, precision, accuracy, error_rate
 
 def train_with_tf_idf(train_data, ngram_range=(1,1)):
     count_vect = CountVectorizer(analyzer='word', ngram_range=ngram_range, stop_words='english')
@@ -38,21 +38,21 @@ def test_tf_idf(test_data, clf,tfidf_transformer, count_vect):
     predicted = clf.predict(X_new_counts)
     cnf_matrix = confusion_matrix(test_data.target, predicted)
     recall = recall_score(test_data.target, predicted, average='weighted')
-    precision_score = precision_score(test_data.target, predicted, average='weighted')
+    precision = precision_score(test_data.target, predicted, average='weighted')
     accuracy = accuracy_score(test_data.target, predicted, normalize=True)
     error_rate = 1 - accuracy
-    return predicted, cnf_matrix, recall, precision_score, accuracy, error_rate
+    return predicted, cnf_matrix, recall, precision, accuracy, error_rate
 
 def make_model():
     train_data = get_train_data(random_state=42)
     test_data = get_test_data(random_state=42)
     clf, count_vect = train(train_data, ngram_range=(1,5))
-    predicted, cnf_matrix, recall, precision_score, accuracy, error_rate=test(test_data, clf, count_vect)
+    predicted, cnf_matrix, recall, precision, accuracy, error_rate=test(test_data, clf, count_vect)
 
 
 def make_model_tf_idf():
     train_data = get_train_data(random_state=42)
     test_data = get_test_data(random_state=42)
     clf, tfidf_transformer, count_vect = train_with_tf_idf(train_data, ngram_range=(1,5))
-    predicted, cnf_matrix, recall, precision_score, accuracy, error_rate=test_tf_idf(test_data, clf,
+    predicted, cnf_matrix, recall, precision, accuracy, error_rate=test_tf_idf(test_data, clf,
                                                                                      tfidf_transformer, count_vect)
