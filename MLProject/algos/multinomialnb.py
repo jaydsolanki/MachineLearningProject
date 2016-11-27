@@ -54,12 +54,12 @@ def make_model():
     train_data = get_train_data(random_state=42)
     test_data = get_test_data(random_state=42)
     clf, count_vect = train(train_data, ngram_range=(1,5))
-    predicted, cnf_matrix, recall, precision_score, accuracy, error_rate=test(train_data, test_data, clf, count_vect)
+    predicted, cnf_matrix, recall, precision_score, accuracy, error_rate=test(test_data, clf, count_vect)
 
 
 def make_model_tf_idf():
     train_data = get_train_data(random_state=42)
     test_data = get_test_data(random_state=42)
     clf, tfidf_transformer, count_vect = train_with_tf_idf(train_data, ngram_range=(1,5))
-    predicted, cnf_matrix, recall, precision_score, accuracy, error_rate=test_tf_idf(train_data, test_data, clf,
+    predicted, cnf_matrix, recall, precision_score, accuracy, error_rate=test_tf_idf(test_data, clf,
                                                                                      tfidf_transformer, count_vect)
