@@ -22,15 +22,15 @@ for c in total_categories:
 
 
 def get_train_data(categories=total_categories, random_state=1):
-    twenty_train = fetch_20newsgroups(subset='train', categories=categories, shuffle=True, random_state=random_state)
+    twenty_train = fetch_20newsgroups(subset='train', categories=categories, shuffle=True, random_state=random_state,remove=('headers', 'footers', 'quotes'))
     return twenty_train
 
 
 def get_test_data(categories=total_categories, random_state=1):
-    twenty_train = fetch_20newsgroups(subset='test', categories=categories, shuffle=True, random_state=random_state)
+    twenty_train = fetch_20newsgroups(subset='test', categories=categories, shuffle=True, random_state=random_state,remove=('headers', 'footers', 'quotes'))
     return twenty_train
 
 
 def get_all_data(categories=total_categories, random_state=1):
-    twenty_train = fetch_20newsgroups(subset='all', categories=categories, shuffle=True, random_state=random_state)
+    twenty_train = fetch_20newsgroups(subset='all', categories=categories, shuffle=True, random_state=random_state,remove=('headers', 'footers', 'quotes'))
     return twenty_train
