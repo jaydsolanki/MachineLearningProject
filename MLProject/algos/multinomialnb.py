@@ -9,6 +9,8 @@ from sklearn import metrics
 import numpy as np
 # from sklearn.metrics import zero_one_score # NOT FOUND
 from .getdata import *
+from NewsGroups20.models import *
+from NewsGroups20.ml_models import *
 
 
 def train(train_data, ngram_range=(1,1), alpha=2):
@@ -57,6 +59,8 @@ def test_tf_idf(test_data, clf, tfidf_transformer, count_vect):
 
 
 def make_model(ngram_range, alpha):
+    model_id = "naive_bayes_wc_"+str(ngram_range[0])+"_"+str(ngram_range[1])+"_"+str(alpha)
+    a = MlModels.objects.filter(id=model_id)
     train_data = get_train_data(random_state=42)
     test_data = get_test_data(random_state=42)
     clf, count_vect = train(train_data, ngram_range=ngram_range, alpha=alpha)
@@ -65,9 +69,21 @@ def make_model(ngram_range, alpha):
 
 
 def make_model_tf_idf(ngram_range, alpha):
-    train_data = get_train_data(random_state=42)
+    model_id = "naive_bayes_tfidf_"+str(ngram_range[0])+"_"+str(ngram_range[1])+"_"+str(alpha)
+    model = retrieve_from_db(model_id)
+    if model:
+        clf = model.param1
+        tfidf_transformer = model.param2
+        count_vect = model.param3
+    else:
+        train_data = get_train_data(random_state=42)
+        clf, tfidf_transformer, count_vect = train_with_tf_idf(train_data, ngram_range=ngram_range, alpha=alpha)
+        pow = PickleObjectWrapper()
+        pow.param1 = clf
+        pow.param2 = tfidf_transformer
+        pow.param3 = count_vect
+        dump_to_db(model_id, pow)
     test_data = get_test_data(random_state=42)
-    clf, tfidf_transformer, count_vect = train_with_tf_idf(train_data, ngram_range=ngram_range, alpha=alpha)
     predicted, cnf_matrix, recall, precision, accuracy, error_rate, fpr, tpr, thresholds=test_tf_idf(test_data, clf,
                                                                                      tfidf_transformer, count_vect)
     return predicted, cnf_matrix, recall, precision, accuracy, error_rate, fpr, tpr, thresholds

@@ -1,51 +1,119 @@
 {% extends 'base.html' %}
 
 {% block head %}
+    {% load static %}
+    <script src="{% static 'js/chartjs.min.js' %}"></script>
     <script>
+        function makeChart(chartData) {
+            var ctx = document.getElementById('bar_chart');
+
+            var chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ["Recall", "Precision", "Accuracy", "Error Rate"],
+                    datasets: [
+                        {
+                            label: "Performance",
+                            data: chartData,
+                            backgroundColor: [
+                                'rgba(54, 162, 235, 0.2)',
+                                'rgba(255, 206, 86, 0.2)',
+                                'rgba(75, 192, 192, 0.2)',
+                                'rgba(255, 99, 132, 0.2)'
+                            ],
+                            borderColor: [
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(255, 206, 86, 1)',
+                                'rgba(75, 192, 192, 1)',
+                                'rgba(255,99,132,1)'
+                            ],
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    scales:{
+                        xAxes:[{
+                            barThickness: 75,
+{#                            stacked: true#}
+                        }],
+                        yAxes:[{
+                            ticks:{
+                                beginAtZero: true
+                            }
+                        }]
+                    }
+                }
+            });
+        }
+
+        function makeRocCurve(fpr, tpr){
+            var ctx = document.getElementById('roc_curve');
+
+            var chart = new Chart(ctx, {
+                type: "line",
+                data: {
+                    lables: fpr,
+                    datasets:[{
+                        label: "ROC",
+                        data: tpr
+                    }]
+                }
+            });
+        }
         $(document).ready(function () {
+{#            makeChart([0.9,0.9,0.5,0.3]);#}
+{#            $("#report").show();#}
+{#            makeRocCurve([0.0, 0.0, 0.00014009526478005044, 0.00014009526478005044, 0.0002801905295601009, 0.0002801905295601009, 0.0005603810591202018, 0.0005603810591202018],#}
+{#                            [0.0025380710659898475, 0.04568527918781726, 0.04568527918781726, 0.06852791878172589, 0.06852791878172589, 0.12436548223350254, 0.12436548223350254, 0.12690355329949238])#}
             $("#classifier").change(function () {
                 if ($(this).val() == "naive_bayes") {
-                    $("#naive_bayes_div").slideDown();
-                    $("#svm_div").slideUp();
+                    $("#naive_bayes_div").show();
+                    $("#svm_div").hide();
                 } else if ($(this).val() == "svm") {
-                    $("#naive_bayes_div").slideUp();
-                    $("#svm_div").slideDown();
+                    $("#naive_bayes_div").hide();
+                    $("#svm_div").show();
                 } else {
-                    $("#naive_bayes_div").slideUp();
-                    $("#svm_div").slideUp();
+                    $("#naive_bayes_div").hide();
+                    $("#svm_div").hide();
                 }
             });
 
             $("#n_gram").slider({});
 
             $("#run_algo").click(function () {
-                {#                if ($("#classifier").val() == "naive_bayes") {#}
-                var data = {
-                    csrfmiddlewaretoken: $("[name='csrfmiddlewaretoken']").val(),
-                    classifier: $("#classifier").val(),
-                    smoothing_factor: $("#smoothing_factor").val(),
-                    approach: $("#approach:checked").val(),
-                    n_gram: $("#n_gram").val()
-                };
-                {#                } else {#}
-                {#                    var data = {#}
-                {#                        csrfmiddlewaretoken: $("[name='csrfmiddlewaretoken']").val(),#}
-                {#                        classifier: $("#classifier").val(),#}
-                {#                    }#}
-                {##}
-                {#                }#}
+                if ($("#classifier").val() == "naive_bayes") {
+                    var data = {
+                        csrfmiddlewaretoken: $("[name='csrfmiddlewaretoken']").val(),
+                        classifier: $("#classifier").val(),
+                        smoothing_factor: $("#smoothing_factor").val(),
+                        approach: $("#approach:checked").val(),
+                        n_gram: $("#n_gram").val()
+                    };
+                } else {
+                    var data = {
+                        csrfmiddlewaretoken: $("[name='csrfmiddlewaretoken']").val(),
+                        classifier: $("#classifier").val(),
+                        learning_rate: $("#learning_rate").val(),
+                        num_iterations: $("#num_iterations").val(),
+                        approach: $("#approach:checked").val(),
+                        n_gram: $("#n_gram").val()
+                    }
+
+                }
                 $("#spinner").show();
                 $.ajax({
                     url: "/classification/",
                     type: "post",
                     data: data,
                     success: function (response) {
+                        $("#report").show();
                         var confusion_matrix = response.confusion_matrix;
                         var labels = response.labels;
                         var template = "<tr>";
                         template += "<td></td>";
                         for (var i = 0; i < labels.length; i++) {
-                            template += "<th>"+labels[i]+"</th>";
+                            template += "<th>" + labels[i] + "</th>";
                         }
                         template += "</tr>";
                         $("#confusion_matrix").append(template);
@@ -53,15 +121,22 @@
                             template = "<tr>";
                             template += "<th>" + labels[i] + "</th>";
                             for (var j = 0; j < confusion_matrix[i].length; j++) {
-{#                                console.log(confusion_matrix[i][j]);#}
+                                {#                                console.log(confusion_matrix[i][j]);#}
                                 template += "<td>" + confusion_matrix[i][j] + "</td>";
                             }
                             template += "</tr>";
                             $("#confusion_matrix").append(template);
                         }
+                        var chartData = [response.recall, response.precision, response.accuracy, response.error_rate];
+                        makeChart(chartData);
+{#                        makeRocCurve(response.fpr, response.tpr);#}
+                        $("#roc_curve").children("img:first").remove();
+                        console.log(response.roc_curve);
+                        $("#roc_curve").append("<img src='data:application/octet;base64,"+response.roc_curve+"'/>")
                     },
                     error: function (response) {
-                        alert(JSON.stringify(response));
+                        $("#report").hide();
+                        console.log(JSON.stringify(response));
                     },
                     complete: function () {
                         $("#spinner").hide();
@@ -95,40 +170,65 @@
         <div class="row">
             <div class="col col-md-2">
                 <label> Smoothing Factor </label>
-                <input type="number" id="smoothing_factor" min="0" name="smoothing_factor" class="form-control"/>
-            </div>
-            <div class="col col-md-3">
-                <label> Approach: </label><br/>
-                <label class="radio-inline"><input type="radio" name="approach" id="approach" value="tf_idf">TF-IDF</label>
-                <label class="radio-inline"><input type="radio" name="approach" id="approach" value="word_count">Word Count</label>
-            </div>
-            <div class="col col-md-3">
-                <label> N-Gram </label>
-                <br/>
-                <input id="n_gram" name="n_gram" type="text" class="span2" value="" data-slider-min="1" data-slider-max="5" data-slider-step="1"
-                       data-slider-value="[1,3]"/>
+                <input type="number" id="smoothing_factor" min="0" name="smoothing_factor" class="form-control" value="2"/>
             </div>
             <br/>
         </div>
         <br/>
-        <div class="row">
-            <div class="col col-md-3">
-                <button class="btn btn-success" id="run_algo">Run Algorithm</button>
-            </div>
-        </div>
-        <hr/>
-        <div align="center">
-            {% load static %}
-            <img id="spinner" src="{% static 'images/big_spinner.gif' %}" style="display: none;"/>
-        </div>
-        <div align="center">
-            <table class="table table-bordered" id="confusion_matrix">
-            </table>
-        </div>
     </div>
     <div id="svm_div" style="display: none;">
         <div align="center">
             <h3> Support Vector Machine </h3>
         </div>
+        <div class="row">
+            <div class="col col-md-2">
+                <label> Learning Rate </label>
+                <input type="number" id="learning_rate" min="0" name="learning_rate" class="form-control" value="0.0001"/>
+            </div>
+            <div class="col col-md-2">
+                <label> Number of Iterations </label>
+                <input type="number" id="num_iterations" min="0" name="num_iterations" class="form-control" value="5"/>
+            </div>
+            <br/>
+        </div>
+        <br/>
+    </div>
+    <div class="row">
+        <div class="col col-md-3">
+            <label> Approach: </label><br/>
+            <label class="radio-inline"><input type="radio" name="approach" id="approach" value="tf_idf" checked="checked">TF-IDF</label>
+            <label class="radio-inline"><input type="radio" name="approach" id="approach" value="word_count">Word Count</label>
+        </div>
+        <div class="col col-md-3">
+            <label> N-Gram </label>
+            <br/>
+            <input id="n_gram" name="n_gram" type="text" class="span2" value="" data-slider-min="1" data-slider-max="5" data-slider-step="1"
+                   data-slider-value="[1,3]"/>
+        </div>
+    </div>
+    <hr/>
+    <div class="row">
+        <div class="col col-md-3">
+            <button class="btn btn-success" id="run_algo">Run Algorithm</button>
+        </div>
+    </div>
+    <div align="center">
+        <img id="spinner" src="{% static 'images/big_spinner.gif' %}" style="display: none;"/>
+    </div>
+    <br/>
+{#    <div style="width: 600px; height: 450px;" align="center">#}
+{#    </div>#}
+
+    <br/>
+    <div align="center" id="report" style="display: None;">
+        <canvas id="bar_chart" ></canvas>
+{#        <canvas id="roc_curve" ></canvas>#}
+        <div id="roc_curve">
+
+        </div>
+        <hr/>
+        <h3> Confusion Matrix</h3>
+        <table class="table table-bordered" id="confusion_matrix">
+        </table>
     </div>
 {% endblock %}

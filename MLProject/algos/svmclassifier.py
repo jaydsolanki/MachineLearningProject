@@ -9,6 +9,7 @@ from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.linear_model import SGDClassifier
 from sklearn import metrics
 import numpy as np
+from NewsGroups20.models import *
 
 
 def train(train_data, ngram_range=(1,1), learning_rate=0.0001, num_iterations=5):
@@ -57,6 +58,8 @@ def test_tf_idf(test_data, clf,tfidf_transformer, count_vect):
 
 
 def make_model(ngram_range, learning_rate, num_iterations):
+    model_id = "svm_"+str(ngram_range[0])+"_"+str(learning_rate)+"_"+str(num_iterations)
+    a = MlModels.objects.get(id=model_id)
     train_data = get_train_data(random_state=42)
     test_data = get_test_data(random_state=42)
     clf, count_vect = train(train_data, ngram_range=ngram_range, learning_rate=learning_rate, num_iterations=num_iterations)

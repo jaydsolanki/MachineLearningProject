@@ -23,7 +23,7 @@
             <a class="navbar-brand" href="/">20 News Groups</a>
         </div>
         <div id="navbar" class="collapse navbar-collapse">
-            <ul class="nav navbar-nav navbar-right">
+            <ul class="nav navbar-nav">
                 {% if title == "Home" %}
                     <li class="active"><a href="/">Home</a></li>
                 {% else %}
@@ -38,6 +38,21 @@
                     <li class="active"><a href="/clustering">Clustering</a></li>
                 {% else %}
                     <li><a href="/clustering">Clustering</a></li>
+                {% endif %}
+                {% if title == "Live News" %}
+                    <li class="active"><a href="/live_news">Live News</a></li>
+                {% else %}
+                    <li><a href="/live_news">Live News</a></li>
+                {% endif %}
+                {% if title == "Classify News" %}
+                    <li class="active"><a href="/classify_news">Classify News</a></li>
+                {% else %}
+                    <li><a href="/classify_news">Classify News</a></li>
+                {% endif %}
+                {% if title == "Alchemy API Test Results" %}
+                    <li class="active"><a href="/alchemy_api_test_results">Alchemy API Test Results</a></li>
+                {% else %}
+                    <li><a href="/alchemy_api_test_results">Alchemy API Test Results</a></li>
                 {% endif %}
 
             </ul>
