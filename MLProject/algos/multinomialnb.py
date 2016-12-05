@@ -5,6 +5,8 @@ from sklearn.metrics import recall_score
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import precision_score
+from sklearn import metrics
+import numpy as np
 # from sklearn.metrics import zero_one_score # NOT FOUND
 from .getdata import *
 
@@ -19,12 +21,15 @@ def train(train_data, ngram_range=(1,1), alpha=2):
 def test(test_data, clf, count_vect):
     X_new_counts = count_vect.transform(test_data.data)
     predicted = clf.predict(X_new_counts)
+    predicted_pa = clf.predict_proba(X_new_counts)
+    score=np.transpose(predicted_pa)
+    fpr, tpr, thresholds = metrics.roc_curve(test_data.target, score[2], pos_label=2)
     cnf_matrix = confusion_matrix(test_data.target, predicted)
     recall = recall_score(test_data.target, predicted, average='weighted')
     precision = precision_score(test_data.target, predicted, average='weighted')
     accuracy = accuracy_score(test_data.target, predicted, normalize=True)
     error_rate = 1 - accuracy
-    return predicted, cnf_matrix, recall, precision, accuracy, error_rate
+    return predicted, cnf_matrix, recall, precision, accuracy, error_rate, fpr, tpr, thresholds
 
 
 def train_with_tf_idf(train_data, ngram_range=(1,1), alpha=2):
@@ -39,27 +44,31 @@ def train_with_tf_idf(train_data, ngram_range=(1,1), alpha=2):
 def test_tf_idf(test_data, clf, tfidf_transformer, count_vect):
     X_new_counts = count_vect.transform(test_data.data)
     X_new_tf = tfidf_transformer.transform(X_new_counts)
+    predicted_pa = clf.predict_proba(X_new_tf)
+    score=np.transpose(predicted_pa)
+    fpr, tpr, thresholds = metrics.roc_curve(test_data.target, score[2], pos_label=2)
     predicted = clf.predict(X_new_tf)
     cnf_matrix = confusion_matrix(test_data.target, predicted)
     recall = recall_score(test_data.target, predicted, average='weighted')
     precision = precision_score(test_data.target, predicted, average='weighted')
     accuracy = accuracy_score(test_data.target, predicted, normalize=True)
     error_rate = 1-accuracy
-    return predicted,cnf_matrix,recall,precision,accuracy,error_rate
+    return predicted,cnf_matrix,recall,precision,accuracy,error_rate, fpr, tpr, thresholds
 
 
 def make_model(ngram_range, alpha):
     train_data = get_train_data(random_state=42)
     test_data = get_test_data(random_state=42)
     clf, count_vect = train(train_data, ngram_range=ngram_range, alpha=alpha)
-    predicted, cnf_matrix, recall, precision, accuracy, error_rate=test(test_data, clf, count_vect)
-    return predicted, cnf_matrix, recall, precision, accuracy, error_rate
+    predicted, cnf_matrix, recall, precision, accuracy, error_rate, fpr, tpr, thresholds=test(test_data, clf, count_vect)
+    return predicted, cnf_matrix, recall, precision, accuracy, error_rate, fpr, tpr, thresholds
 
 
 def make_model_tf_idf(ngram_range, alpha):
     train_data = get_train_data(random_state=42)
     test_data = get_test_data(random_state=42)
     clf, tfidf_transformer, count_vect = train_with_tf_idf(train_data, ngram_range=ngram_range, alpha=alpha)
-    predicted, cnf_matrix, recall, precision, accuracy, error_rate=test_tf_idf(test_data, clf,
+    predicted, cnf_matrix, recall, precision, accuracy, error_rate, fpr, tpr, thresholds=test_tf_idf(test_data, clf,
                                                                                      tfidf_transformer, count_vect)
-    return predicted, cnf_matrix, recall, precision, accuracy, error_rate
+    return predicted, cnf_matrix, recall, precision, accuracy, error_rate, fpr, tpr, thresholds
+

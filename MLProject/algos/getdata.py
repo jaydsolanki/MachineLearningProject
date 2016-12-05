@@ -15,6 +15,11 @@ total_categories = [
                 'sci.space','talk.religion.misc'
               ]
 
+total_categories_display = []
+
+for c in total_categories:
+    total_categories_display.append(c.replace("."," "))
+
 
 def get_train_data(categories=total_categories, random_state=1):
     twenty_train = fetch_20newsgroups(subset='train', categories=categories, shuffle=True, random_state=random_state)
