@@ -1,6 +1,6 @@
+import codecs
 from io import BytesIO
 import pickle
-import base64
 from .models import *
 
 
@@ -10,8 +10,10 @@ def object_to_pickle_bytes(obj):
     return sio.getvalue()
 
 
-def pickle_bytes_to_base64_string(picked_obj):
-    return base64.b64encode(picked_obj.decode('ascii'))
+def pickle_bytes_to_base64_string(pickled_obj):
+    #return base64.b64encode(picked_obj.decode('ascii'))
+    #return pickle.loads(codecs.decode(pickled_obj.encode(), 'base64')).decode()
+    return codecs.encode(pickle.dumps(pickled_obj), "base64").decode()
 
 
 def save_pickle_obj_string_to_db(id, pickled_obj_base64_string):
@@ -28,7 +30,7 @@ def dump_to_db(id, pow):
 def retrieve_from_db(model_id):
     model = MlModels.objects.filter(id=model_id).first()
     if model:
-        model = base64.b64decode(model.model)
+        model = pickle.loads(codecs.decode(model.model.encode(), 'base64'))
         sio = BytesIO(model)
         model = pickle.load(sio)
     return model

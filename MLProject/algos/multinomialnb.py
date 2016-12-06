@@ -60,10 +60,18 @@ def test_tf_idf(test_data, clf, tfidf_transformer, count_vect):
 
 def make_model(ngram_range, alpha):
     model_id = "naive_bayes_wc_"+str(ngram_range[0])+"_"+str(ngram_range[1])+"_"+str(alpha)
-    a = MlModels.objects.filter(id=model_id)
-    train_data = get_train_data(random_state=42)
+    model = retrieve_from_db(model_id)
+    if model:
+        clf = model.param1
+        count_vect = model.param2
+    else:
+        train_data = get_train_data(random_state=42)
+        clf, count_vect = train(train_data, ngram_range=ngram_range, alpha=alpha)
+        pow = PickleObjectWrapper()
+        pow.param1 = clf
+        pow.param2 = count_vect
+        dump_to_db(model_id, pow)
     test_data = get_test_data(random_state=42)
-    clf, count_vect = train(train_data, ngram_range=ngram_range, alpha=alpha)
     predicted, cnf_matrix, recall, precision, accuracy, error_rate, fpr, tpr, thresholds=test(test_data, clf, count_vect)
     return predicted, cnf_matrix, recall, precision, accuracy, error_rate, fpr, tpr, thresholds
 
