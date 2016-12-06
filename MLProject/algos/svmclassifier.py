@@ -10,6 +10,7 @@ from sklearn.linear_model import SGDClassifier
 from sklearn import metrics
 import numpy as np
 from NewsGroups20.models import *
+from NewsGroups20.ml_models import *
 
 
 def train(train_data, ngram_range=(1,1), learning_rate=0.0001, num_iterations=5):
@@ -58,19 +59,39 @@ def test_tf_idf(test_data, clf,tfidf_transformer, count_vect):
 
 
 def make_model(ngram_range, learning_rate, num_iterations):
-    model_id = "svm_"+str(ngram_range[0])+"_"+str(learning_rate)+"_"+str(num_iterations)
-    a = MlModels.objects.get(id=model_id)
-    train_data = get_train_data(random_state=42)
+    model_id = "svm_"+str(ngram_range[0])+"_"+str(ngram_range[1])+"_"+str(learning_rate)+"_"+str(num_iterations)
+    model = retrieve_from_db(model_id)
+    if model:
+        clf = model.param1
+        count_vect = model.param2
+    else:
+        train_data = get_train_data(random_state=42)
+        clf, count_vect = train(train_data, ngram_range=ngram_range, learning_rate=learning_rate,num_iterations=num_iterations)
+        pow = PickleObjectWrapper()
+        pow.param1 = clf
+        pow.param2 = count_vect
+        dump_to_db(model_id, pow)
     test_data = get_test_data(random_state=42)
-    clf, count_vect = train(train_data, ngram_range=ngram_range, learning_rate=learning_rate, num_iterations=num_iterations)
     predicted, cnf_matrix, recall, precision, accuracy, error_rate, fpr, tpr, thresholds=test(test_data, clf, count_vect)
     return predicted, cnf_matrix, recall, precision, accuracy, error_rate, fpr, tpr, thresholds
 
 
 def make_model_tf_idf(ngram_range, learning_rate, num_iterations):
-    train_data = get_train_data(random_state=42)
+    model_id = "svm_"+str(ngram_range[0])+"_"+str(ngram_range[1])+"_"+str(learning_rate)+"_"+str(num_iterations)
+    model = retrieve_from_db(model_id)
+    if model:
+        clf = model.param1
+        tfidf_transformer = model.param2
+        count_vect = model.param3
+    else:
+        train_data = get_train_data(random_state=42)
+        clf, tfidf_transformer, count_vect = train_with_tf_idf(train_data, ngram_range=ngram_range,learning_rate=learning_rate,num_iterations=num_iterations)
+        pow = PickleObjectWrapper()
+        pow.param1 = clf
+        pow.param2 = tfidf_transformer
+        pow.param3 = count_vect
+        dump_to_db(model_id, pow)
     test_data = get_test_data(random_state=42)
-    clf, tfidf_transformer, count_vect = train_with_tf_idf(train_data, ngram_range=ngram_range, learning_rate=learning_rate, num_iterations=num_iterations)
     predicted, cnf_matrix, recall, precision, accuracy, error_rate, fpr, tpr, thresholds=test_tf_idf(test_data, clf,tfidf_transformer, count_vect)
     return predicted, cnf_matrix, recall, precision, accuracy, error_rate, fpr, tpr, thresholds
 
