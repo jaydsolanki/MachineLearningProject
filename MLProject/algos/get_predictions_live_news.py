@@ -1,0 +1,1 @@
+#Will have to decide on schema for live news before implementing prediction

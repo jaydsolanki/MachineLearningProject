@@ -7,7 +7,6 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import precision_score
 from sklearn import metrics
 import numpy as np
-# from sklearn.metrics import zero_one_score # NOT FOUND
 from .getdata import *
 from NewsGroups20.models import *
 from NewsGroups20.ml_models import *
