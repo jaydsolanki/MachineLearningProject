@@ -57,6 +57,29 @@ def test_tf_idf(test_data, clf, tfidf_transformer, count_vect):
     error_rate = 1-accuracy
     return predicted,cnf_matrix,recall,precision,accuracy,error_rate, fpr, tpr, thresholds
 
+def get_metrics_for_roc(algo_type,ngram_range,alpha,target_class_index):
+    test_data = get_test_data(random_state=42)
+    if algo_type=='word_count':
+        algo='wc'
+    elif algo_type=='tfidf':
+        algo='tfidf'
+    model_id = "naive_bayes_"+algo+"_" + str(ngram_range[0]) + "_" + str(ngram_range[1]) + "_" + str(alpha)
+    model = retrieve_from_db(model_id)
+    clf = model.param1
+    if algo=='wc':
+        count_vect = model.param2
+        X_new_counts = count_vect.transform(test_data.data)
+        predicted_pa = clf.predict_proba(X_new_counts)
+    elif algo=='tfidf':
+        tfidf_transformer = model.param2
+        count_vect = model.param3
+        X_new_counts = count_vect.transform(test_data.data)
+        X_new_tf = tfidf_transformer.transform(X_new_counts)
+        predicted_pa = clf.predict_proba(X_new_tf)
+    score = np.transpose(predicted_pa)
+    fpr, tpr, thresholds = metrics.roc_curve(test_data.target, score[target_class_index], pos_label=target_class_index)
+    return fpr, tpr, thresholds
+
 
 def make_model(ngram_range, alpha):
     model_id = "naive_bayes_wc_"+str(ngram_range[0])+"_"+str(ngram_range[1])+"_"+str(alpha)
