@@ -1,19 +1,24 @@
 from sklearn.datasets import fetch_20newsgroups
-total_categories = [
-                'alt.atheism', 'soc.religion.christian',
-                'comp.graphics', 'sci.med',
-                'comp.os.ms-windows.misc',
-                'comp.sys.ibm.pc.hardware',
-                'comp.sys.mac.hardware',
-                'comp.windows.x','misc.forsale','rec.autos',
-                'rec.motorcycles',
-                'rec.sport.baseball',
-                'rec.sport.hockey','talk.politics.misc',
-                'talk.politics.guns',
-                'talk.politics.mideast','sci.crypt',
-                'sci.electronics',
-                'sci.space','talk.religion.misc'
-              ]
+total_categories = ['alt.atheism',
+                     'comp.graphics',
+                     'comp.os.ms-windows.misc',
+                     'comp.sys.ibm.pc.hardware',
+                     'comp.sys.mac.hardware',
+                     'comp.windows.x',
+                     'misc.forsale',
+                     'rec.autos',
+                     'rec.motorcycles',
+                     'rec.sport.baseball',
+                     'rec.sport.hockey',
+                     'sci.crypt',
+                     'sci.electronics',
+                     'sci.med',
+                     'sci.space',
+                     'soc.religion.christian',
+                     'talk.politics.guns',
+                     'talk.politics.mideast',
+                     'talk.politics.misc',
+                     'talk.religion.misc']
 
 total_categories_display = []
 

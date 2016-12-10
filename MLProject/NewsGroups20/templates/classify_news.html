@@ -1,5 +1,79 @@
 {% extends 'base.html' %}
+{% block head %}
+    {% load static %}
+    <script src="{% static 'js/chartjs.min.js' %}"></script>
 
+    <script>
+        $(document).ready(function () {
+            $("#classify").click(function () {
+                $("#pi_chart").remove();
+                $.ajax({
+                    csrfmiddlewaretoken: $("[name='csrfmiddlewaretoken']").val(),
+                    url: '/user_news_classification/',
+                    type: 'post',
+                    data: {
+                        classifier: $("#classifier").val(),
+                        news: $("#news").val()
+                    },
+                    success: function (response) {
+                        $("#results").append("<canvas id='pi_chart'></canvas>");
+                        makeChart(response.class_names, response.scores)
+                        $("#results").show();
+                    }
+                })
+            });
+            function makeChart(class_names, scores) {
+                var ctx = document.getElementById('pi_chart');
+
+                var chart = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: class_names,
+                        datasets: [
+                            {
+                                data: scores,
+                                backgroundColor: [
+                                    "#19b743",
+                                    "#195eb7",
+                                    "#ede909",
+                                    "#ed2709",
+                                    "#aced09",
+                                    "#9d09ed",
+                                    "#1cefb0"
+                                ],
+                            }
+                        ]
+                    },
+                    options: {}
+                });
+            }
+        });
+    </script>
+{% endblock %}
 {% block content %}
-    <textarea></textarea>
+    {% csrf_token %}
+    <div class="row">
+        <div class="col col-md-12">
+            <label> Enter News to classify </label>
+            <textarea class="form-control" rows="5" id="news"></textarea>
+        </div>
+    </div>
+    <br/>
+    <div class="row">
+        <div class="col col-md-2">
+            <label>Select Classifier</label>
+        </div>
+        <div class="col col-md-3">
+            <select class="form-control selectpicker" id="classifier">
+                <option value="svm"> SVM Classifier</option>
+                <option value="naive_bayes"> Naive Bayes</option>
+            </select>
+        </div>
+    </div>
+    <br/>
+    <button class="btn btn-primary" id="classify">Classify</button>
+    <hr/>
+    <div id="results" style="display: none; width: 800px; height: 800px;">
+        <canvas id="pi_chart"></canvas>
+    </div>
 {% endblock %}

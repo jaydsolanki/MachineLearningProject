@@ -32,13 +32,13 @@
                     ]
                 },
                 options: {
-                    scales:{
-                        xAxes:[{
+                    scales: {
+                        xAxes: [{
                             barThickness: 75,
-{#                            stacked: true#}
+                            {#                            stacked: true#}
                         }],
-                        yAxes:[{
-                            ticks:{
+                        yAxes: [{
+                            ticks: {
                                 beginAtZero: true
                             }
                         }]
@@ -47,14 +47,14 @@
             });
         }
 
-        function makeRocCurve(fpr, tpr){
+        function makeRocCurve(fpr, tpr) {
             var ctx = document.getElementById('roc_curve');
 
             var chart = new Chart(ctx, {
                 type: "line",
                 data: {
                     lables: fpr,
-                    datasets:[{
+                    datasets: [{
                         label: "ROC",
                         data: tpr
                     }]
@@ -62,10 +62,10 @@
             });
         }
         $(document).ready(function () {
-{#            makeChart([0.9,0.9,0.5,0.3]);#}
-{#            $("#report").show();#}
-{#            makeRocCurve([0.0, 0.0, 0.00014009526478005044, 0.00014009526478005044, 0.0002801905295601009, 0.0002801905295601009, 0.0005603810591202018, 0.0005603810591202018],#}
-{#                            [0.0025380710659898475, 0.04568527918781726, 0.04568527918781726, 0.06852791878172589, 0.06852791878172589, 0.12436548223350254, 0.12436548223350254, 0.12690355329949238])#}
+            {#            makeChart([0.9,0.9,0.5,0.3]);#}
+            {#            $("#report").show();#}
+            {#            makeRocCurve([0.0, 0.0, 0.00014009526478005044, 0.00014009526478005044, 0.0002801905295601009, 0.0002801905295601009, 0.0005603810591202018, 0.0005603810591202018],#}
+            {#                            [0.0025380710659898475, 0.04568527918781726, 0.04568527918781726, 0.06852791878172589, 0.06852791878172589, 0.12436548223350254, 0.12436548223350254, 0.12690355329949238])#}
             $("#classifier").change(function () {
                 if ($(this).val() == "naive_bayes") {
                     $("#naive_bayes_div").show();
@@ -82,6 +82,9 @@
             $("#n_gram").slider({});
 
             $("#run_algo").click(function () {
+                $("#roc_curve").children("img:first").remove();
+                $("#report").hide();
+
                 if ($("#classifier").val() == "naive_bayes") {
                     var data = {
                         csrfmiddlewaretoken: $("[name='csrfmiddlewaretoken']").val(),
@@ -130,10 +133,10 @@
                         }
                         var chartData = [response.recall, response.precision, response.accuracy, response.error_rate];
                         makeChart(chartData);
-{#                        makeRocCurve(response.fpr, response.tpr);#}
-                        $("#roc_curve").children("img:first").remove();
-                        console.log(response.roc_curve);
-                        $("#roc_curve").append("<img src='data:application/octet;base64,"+response.roc_curve+"'/>")
+                        {#                        makeRocCurve(response.fpr, response.tpr);#}
+                        {#                        $("#roc_curve").children("img:first").remove();#}
+                        {#                        console.log(response.roc_curve);#}
+                        {#                        $("#roc_curve").append("<img src='data:application/octet;base64,"+response.roc_curve+"'/>")#}
                     },
                     error: function (response) {
                         $("#report").hide();
@@ -143,6 +146,50 @@
                         $("#spinner").hide();
                     }
                 });
+            });
+
+            $("#roc_curve_select").change(function () {
+
+                if ($(this).val() != "") {
+                    $("#roc_curve_spinner").show();
+                    if ($("#classifier").val() == "naive_bayes") {
+                        var data = {
+                            csrfmiddlewaretoken: $("[name='csrfmiddlewaretoken']").val(),
+                            classifier: $("#classifier").val(),
+                            smoothing_factor: $("#smoothing_factor").val(),
+                            approach: $("#approach:checked").val(),
+                            n_gram: $("#n_gram").val(),
+                            target_class: $("#roc_curve_select").val()
+                        };
+                    } else {
+                        var data = {
+                            csrfmiddlewaretoken: $("[name='csrfmiddlewaretoken']").val(),
+                            classifier: $("#classifier").val(),
+                            learning_rate: $("#learning_rate").val(),
+                            num_iterations: $("#num_iterations").val(),
+                            approach: $("#approach:checked").val(),
+                            n_gram: $("#n_gram").val(),
+                            target_class: $("#roc_curve_select").val()
+                        }
+
+                    }
+                    $.ajax({
+                        url: "/roc_curve/",
+                        type: "post",
+                        data: data,
+                        success: function (response) {
+                            {#                            makeRocCurve(response.fpr, response.tpr);#}
+                            $("#roc_curve").children("img:first").remove();
+                            $("#roc_curve").append("<img src='data:application/octet;base64," + response.roc_curve + "'/>")
+                        },
+                        error: function (response) {
+                            alert(JSON.stringify(response));
+                        },
+                        complete: function(){
+                            $("#roc_curve_spinner").hide();
+                        }
+                    });
+                }
             });
 
         });
@@ -197,7 +244,7 @@
     <div class="row">
         <div class="col col-md-3">
             <label> Approach: </label><br/>
-            <label class="radio-inline"><input type="radio" name="approach" id="approach" value="tf_idf" checked="checked">TF-IDF</label>
+            <label class="radio-inline"><input type="radio" name="approach" id="approach" value="tfidf" checked="checked">TF-IDF</label>
             <label class="radio-inline"><input type="radio" name="approach" id="approach" value="word_count">Word Count</label>
         </div>
         <div class="col col-md-3">
@@ -217,15 +264,31 @@
         <img id="spinner" src="{% static 'images/big_spinner.gif' %}" style="display: none;"/>
     </div>
     <br/>
-{#    <div style="width: 600px; height: 450px;" align="center">#}
-{#    </div>#}
+    {#    <div style="width: 600px; height: 450px;" align="center">#}
+    {#    </div>#}
 
     <br/>
     <div align="center" id="report" style="display: None;">
-        <canvas id="bar_chart" ></canvas>
-{#        <canvas id="roc_curve" ></canvas>#}
-        <div id="roc_curve">
-
+        <canvas id="bar_chart"></canvas>
+        {#        <canvas id="roc_curve" ></canvas>#}
+        <hr/>
+        <div class="row">
+            <div class="col col-md-3">
+                <label>Select Class for ROC curve</label>
+            </div>
+            <div class="col col-md-6">
+                <div id="roc_curve">
+                    <select class="form-control selectpicker" id="roc_curve_select">
+                        <option value=""> Select</option>
+                        {% for category in total_categories %}
+                            <option value="{{ forloop.counter0 }}"> {{ category }} </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="col col-md-1">
+                <img src="{% static 'images/spinner.gif' %}" width="100%" height="100%" id="roc_curve_spinner" style="display: none;"/>
+            </div>
         </div>
         <hr/>
         <h3> Confusion Matrix</h3>

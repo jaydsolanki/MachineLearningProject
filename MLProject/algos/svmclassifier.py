@@ -31,7 +31,7 @@ def test(test_data, clf, count_vect):
     precision = precision_score(test_data.target, predicted, average='weighted')
     accuracy = accuracy_score(test_data.target, predicted, normalize=True)
     error_rate = 1 - accuracy
-    return predicted, cnf_matrix, recall, precision, accuracy, error_rate, fpr, tpr, thresholds
+    return predicted, cnf_matrix, recall, precision, accuracy, error_rate
 
 
 def train_with_tf_idf(train_data, ngram_range=(1,1), learning_rate=0.0001, num_iterations=5):
@@ -55,7 +55,7 @@ def test_tf_idf(test_data, clf,tfidf_transformer, count_vect):
     precision = precision_score(test_data.target, predicted, average='weighted')
     accuracy = accuracy_score(test_data.target, predicted, normalize=True)
     error_rate = 1 - accuracy
-    return predicted, cnf_matrix, recall, precision, accuracy, error_rate, fpr, tpr, thresholds
+    return predicted, cnf_matrix, recall, precision, accuracy, error_rate
 
 
 def get_metrics_for_roc(algo_type,ngram_range,learning_rate, num_iterations,target_class_index):
@@ -78,7 +78,7 @@ def get_metrics_for_roc(algo_type,ngram_range,learning_rate, num_iterations,targ
         X_new_tf = tfidf_transformer.transform(X_new_counts)
         y_score = clf.decision_function(X_new_tf)
     score = np.transpose(y_score)
-    fpr, tpr, thresholds = metrics.roc_curve(test_data.target, score[target_class_index], pos_label=target_class_index)
+    fpr, tpr, thresholds = metrics.roc_curve(test_data.target, y_score=score[int(target_class_index)], pos_label=int(target_class_index))
     return fpr,tpr,thresholds
 
 
@@ -96,8 +96,8 @@ def make_model(ngram_range, learning_rate, num_iterations):
         pow.param2 = count_vect
         dump_to_db(model_id, pow)
     test_data = get_test_data(random_state=42)
-    predicted, cnf_matrix, recall, precision, accuracy, error_rate, fpr, tpr, thresholds=test(test_data, clf, count_vect)
-    return predicted, cnf_matrix, recall, precision, accuracy, error_rate, fpr, tpr, thresholds
+    predicted, cnf_matrix, recall, precision, accuracy, error_rate = test(test_data, clf, count_vect)
+    return predicted, cnf_matrix, recall, precision, accuracy, error_rate
 
 
 def make_model_tf_idf(ngram_range, learning_rate, num_iterations):
@@ -116,7 +116,7 @@ def make_model_tf_idf(ngram_range, learning_rate, num_iterations):
         pow.param3 = count_vect
         dump_to_db(model_id, pow)
     test_data = get_test_data(random_state=42)
-    predicted, cnf_matrix, recall, precision, accuracy, error_rate, fpr, tpr, thresholds=test_tf_idf(test_data, clf,tfidf_transformer, count_vect)
-    return predicted, cnf_matrix, recall, precision, accuracy, error_rate, fpr, tpr, thresholds
+    predicted, cnf_matrix, recall, precision, accuracy, error_rate = test_tf_idf(test_data, clf,tfidf_transformer, count_vect)
+    return predicted, cnf_matrix, recall, precision, accuracy, error_rate
 
 

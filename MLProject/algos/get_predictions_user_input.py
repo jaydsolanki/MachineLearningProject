@@ -22,4 +22,4 @@ def get_predictions(algo,text):
         predict_dict[clf.classes_[i]] = predict_list[0][i]
     sorted_predict_dict = sorted(predict_dict.items(), key=lambda x: x[1], reverse=True)
     dict_predicted[text]=sorted_predict_dict
-    return dict_predicted
+    return sorted_predict_dict

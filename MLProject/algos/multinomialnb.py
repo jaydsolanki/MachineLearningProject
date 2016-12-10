@@ -76,7 +76,7 @@ def get_metrics_for_roc(algo_type,ngram_range,alpha,target_class_index):
         X_new_tf = tfidf_transformer.transform(X_new_counts)
         predicted_pa = clf.predict_proba(X_new_tf)
     score = np.transpose(predicted_pa)
-    fpr, tpr, thresholds = metrics.roc_curve(test_data.target, score[target_class_index], pos_label=target_class_index)
+    fpr, tpr, thresholds = metrics.roc_curve(test_data.target, y_score=score[int(target_class_index)], pos_label=int(target_class_index))
     return fpr, tpr, thresholds
 
 
