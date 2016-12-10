@@ -16,20 +16,27 @@ while True:
             if type(title)==tuple:
                 title = title[0]
             publishedAt = result['publishedAt']
-            print("DESCRIPTION: "+str(description))
             print("TITLE: "+str(title))
-            print("TITLE[0]: "+str(title[0]))
-            print("PUBLISHED AT: "+str(publishedAt))
+            print("DESCRIPTION: "+str(description))
+            print("PUBLISHEDAT: "+str(publishedAt))
+            if publishedAt:
+                published_date, published_time = publishedAt.split("T")
+                published_date = "'"+published_date.replace("'","''")+"'" if published_date else 'null'
+                published_date_val = '='+ published_date
+                published_time = "'"+published_time.replace("'","''")+"'" if published_time else 'null'
+            else:
+                published_date_val = ' is null'
+                published_date = 'null'
+                published_time = 'null'
             description = "'"+description.replace("'","''")+"'" if description else 'null'
-            title = "'"+title.replace("'","''")+"'" if title else 'null'
-            publishedAt = "'"+publishedAt.replace("'","''")+"'" if publishedAt else 'null'
+            title = "'"+title.replace("'","''")+"'" if title\
+                else 'null'
             title_val = '='+title if title!='null' else 'is null'
-            publishedAt_val = '='+publishedAt if publishedAt!='null' else 'is null'
-            cursor.execute("SELECT 1 from live_news where title"+title_val+" and published_at="+publishedAt)
+            cursor.execute("SELECT 1 from live_news where title"+title_val+" and published_date"+published_date_val)
             data = cursor.fetchall()
             if len(data)>0:
                 continue
-            insert_query = "INSERT INTO live_news (title, published_at, description) VALUES ("+title+","+publishedAt+","+description+")"
+            insert_query = "INSERT INTO live_news (title, published_date, published_time, description) VALUES ("+title+","+published_date+","+published_time+","+description+")"
             cursor.execute(insert_query)
             conn.commit()
             print(insert_query)
