@@ -23,9 +23,9 @@ def get_predictions(algo):
             for line in lines:
                 new_docs.append(line)
             if algo=='naive_bayes':
-                model_id = algo + "_tfidf_0_1_2"
+                model_id = algo + "_tfidf_1_1_2"
             elif algo=='svm':
-                model_id = algo + "_tfidf_0_1_0.001_5"
+                model_id = algo + "_tfidf_1_3_0.0001_5"
             model = retrieve_from_db(model_id)
             clf = model.param1
             tfidf_transformer = model.param2
