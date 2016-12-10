@@ -1,15 +1,15 @@
-DELETE TABLE IF EXISTS ml_models;
+DROP TABLE IF EXISTS ml_models;
 
 CREATE TABLE ml_models(
     id varchar(255) PRIMARY KEY,
-    model TEXT
+    model LONGTEXT
 );
 
-Drop table live_news;
+DROP TABLE IF EXISTS live_news;
 CREATE TABLE live_news(
-    title TEXT,
-    published_at date,
-    published_at time,
-    description TEXT,
-    CONSTRAINT pk_live_news PRIMARY KEY (`published_at`, `title`)
+    title varchar(1000),
+    published_date date,
+    published_time time,
+    description MEDIUMTEXT,
+    CONSTRAINT pk_live_news PRIMARY KEY (`title`, `published_date`)
 );
