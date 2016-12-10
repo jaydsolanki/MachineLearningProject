@@ -130,14 +130,15 @@ class DjangoSession(models.Model):
 
 
 class LiveNews(models.Model):
-    id = models.IntegerField(primary_key=True, blank=True, null=False)  # AutoField?
-    published_at = models.DateTimeField(blank=True, null=True)
+    title = models.TextField(primary_key=True, blank=True, null=False)
+    published_date = models.DateField(primary_key=True, blank=True, null=False)
+    published_time = models.TimeField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
-    title = models.TextField(blank=True, null=True)
 
     class Meta:
         managed = False
         db_table = 'live_news'
+        unique_together = (('title', 'published_date'),)
 
 
 class MlModels(models.Model):

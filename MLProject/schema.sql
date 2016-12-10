@@ -5,9 +5,11 @@ CREATE TABLE ml_models(
     model TEXT
 );
 
+Drop table live_news;
 CREATE TABLE live_news(
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    published_at datetime,
+    title TEXT,
+    published_at date,
+    published_at time,
     description TEXT,
-    title TEXT
-)
+    CONSTRAINT pk_live_news PRIMARY KEY (`published_at`, `title`)
+);

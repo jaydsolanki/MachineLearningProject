@@ -9,6 +9,7 @@ from io import BytesIO
 import base64
 import algos.get_predictions_user_input as user_news
 from django.views.decorators.csrf import csrf_exempt
+from .models import LiveNews
 
 
 def index(request):
@@ -65,6 +66,7 @@ def alchemy_api_test_results(request):
 
 
 def live_news(request):
+    LiveNews
     return render(request, "index.html", {"title":"Live News"})
 
 
