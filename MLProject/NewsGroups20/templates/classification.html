@@ -110,6 +110,7 @@
                         $("#report").show();
                         var confusion_matrix = response.confusion_matrix;
                         var labels = response.labels;
+                        $("#confusion_matrix").html('');
                         var template = "<tr>";
                         template += "<td></td>";
                         for (var i = 0; i < labels.length; i++) {
