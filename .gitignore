@@ -1,3 +1,4 @@
 .idea/
 *.pyc
 20news-18828/
+db.sqlite3
