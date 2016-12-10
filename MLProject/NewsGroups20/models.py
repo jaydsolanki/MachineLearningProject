@@ -129,6 +129,17 @@ class DjangoSession(models.Model):
         db_table = 'django_session'
 
 
+class LiveNews(models.Model):
+    id = models.IntegerField(primary_key=True, blank=True, null=False)  # AutoField?
+    published_at = models.DateTimeField(blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    title = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'live_news'
+
+
 class MlModels(models.Model):
     id = models.CharField(primary_key=True, max_length=255, blank=True, null=False)
     model = models.TextField(blank=True, null=True)
