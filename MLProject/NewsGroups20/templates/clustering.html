@@ -1,5 +1,249 @@
 {% extends 'base.html' %}
 
+{% block head %}
+    {% load static %}
+    <script src="{% static 'js/chartjs.min.js' %}"></script>
+    <script>
+        $(document).ready(function () {
+
+            $("#kmeans_button").click(function () {
+
+                $("#kmeans_result").html('');
+                $("#kmeans_result").append('<label> Characteristics </label>');
+                $("#kmeans_result").append('<canvas id="kmeans_params"></canvas>');
+                $("#kmeans_result").append('<hr/>');
+                $("#kmeans_result").append('<label> Documents per Cluster </label>');
+                $("#kmeans_result").append('<canvas id="count_chart"></canvas>');
+                $("#kmeans_result").append('<hr/>');
+                $("#kmeans_result").append('<label> Labeled Documents </label>');
+                $("#kmeans_result").append('<canvas id="label_count_chart"></canvas>');
+                $("#kmeans_result").hide();
+
+                $("#spinner_div").show();
+                $.ajax({
+                    url: '/kmeans/',
+                    type: 'post',
+                    data: {
+                        num_features: $("#num_features").val(),
+                        random_state: $("#random_state").val()
+                    },
+                    success: function (response) {
+                        $("#kmeans_result").show();
+                        makeChart('kmeans_params', response.scores[0], response.scores[1], response.scores[2]);
+                        makeCountChart('count_chart', response.counts);
+                        makeLabelCountChart('label_count_chart', response.total_labels, response.total_count);
+                    },
+                    error: function (response) {
+                        alert(JSON.stringify(response));
+                    },
+                    complete: function () {
+                        $("#kmeans_div").show();
+                        $("#ldm_div").hide();
+                        $("#spinner_div").hide();
+                    }
+                })
+            });
+            function makeCountChart(id, counts) {
+                var ctx = document.getElementById(id);
+                var chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ["Cluster 0", "Cluster 1", "Cluster 2", "Cluster 3", "Cluster 4", "Cluster 5", "Cluster 6", "Cluster 7",
+                            "Cluster 8", "Cluster 9", "Cluster 10", "Cluster 11", "Cluster 12", "Cluster 13", "Cluster 14", "Cluster 15",
+                            "Cluster 16", "Cluster 17", "Cluster 18", "Cluster 19"],
+                        datasets: [
+                            {
+                                label: "Clusters",
+                                data: counts,
+                                backgroundColor: [
+                                    "#0000FF",
+                                    "#8A2BE2",
+                                    "#A52A2A",
+                                    "#DEB887",
+                                    "#5F9EA0",
+                                    "#7FFF00",
+                                    "#D2691E",
+                                    "#FF7F50",
+                                    "#6495ED",
+                                    "#FFF8DC",
+                                    "#DC143C",
+                                    "#00FFFF",
+                                    "#00008B",
+                                    "#008B8B",
+                                    "#B8860B",
+                                    "#006400",
+                                    "#8B008B",
+                                    "#00BFFF",
+                                    "#FF1493",
+                                    "#ADFF2F"
+                                ],
+                                borderWidth: 0.5
+                            }
+                        ]
+                    },
+                    options: {
+                        scales: {
+                            xAxes: [{
+                                barThickness: 75,
+                                {#                            stacked: true#}
+                            }],
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }]
+                        }
+                    }
+                });
+            }
+
+            function makeLabelCountChart(id, total_labels, total_count) {
+                var ctx = document.getElementById(id);
+                var chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: total_labels,
+                        datasets: [
+                            {
+                                label: "Clusters",
+                                data: total_count,
+                                backgroundColor: [
+                                    "#0000FF",
+                                    "#8A2BE2",
+                                    "#A52A2A",
+                                    "#DEB887",
+                                    "#5F9EA0",
+                                    "#7FFF00",
+                                    "#D2691E",
+                                    "#FF7F50",
+                                    "#6495ED",
+                                    "#FFF8DC",
+                                    "#DC143C",
+                                    "#00FFFF",
+                                    "#00008B",
+                                    "#008B8B",
+                                    "#B8860B",
+                                    "#006400",
+                                    "#8B008B",
+                                    "#00BFFF",
+                                    "#FF1493",
+                                    "#ADFF2F"
+                                ],
+                                borderWidth: 0.5
+                            }
+                        ]
+                    },
+                    options: {
+                        scales: {
+                            xAxes: [{
+                                barThickness: 75,
+                                {#                            stacked: true#}
+                            }],
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }]
+                        }
+                    }
+                });
+            }
+
+            function makeChart(id, homogeneity_score, completeness_score, v_measure_score) {
+                var ctx = document.getElementById(id);
+                var chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ["Homogeneity Score", "Completeness Score", "V Measure Score"],
+                        datasets: [
+                            {
+                                label: "Characteristics",
+                                data: [homogeneity_score, completeness_score, v_measure_score],
+                                backgroundColor: [
+                                    'rgba(54, 162, 235, 0.2)',
+                                    'rgba(255, 206, 86, 0.2)',
+                                    'rgba(75, 192, 192, 0.2)',
+                                ],
+                                borderColor: [
+                                    'rgba(54, 162, 235, 1)',
+                                    'rgba(255, 206, 86, 1)',
+                                    'rgba(75, 192, 192, 1)',
+                                ],
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        scales: {
+                            xAxes: [{
+                                barThickness: 75,
+                                {#                            stacked: true#}
+                            }],
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }]
+                        }
+                    }
+                });
+
+                $("#algo").change(function(){
+                    $("#kmeans_result").hide();
+                    $("#kmeans_div").hide();
+                    $("#ldm_div").show();
+                });
+            }
+        });
+    </script>
+{% endblock %}
+
 {% block content %}
-    <h1> Under Developement</h1>
+    <h1> Clustering </h1>
+    <hr/>
+    <div class="row">
+        <div class="col col-md-3">
+            <label> Select Algorithm: </label>
+        </div>
+        <div class="col col-md-6">
+            <select class="form-control selectpicker" id="'algo">
+                <option value="kmeans"> K Means</option>
+                <option value="ldm"> L D M</option>
+            </select>
+        </div>
+    </div>
+    <hr/>
+    {% load static %}
+    <div id="kmeans_div">
+        <div class="row">
+            <div class="col col-md-3">
+                <label> Num Features </label>
+                <input id="num_features" class="form-control" value="10000" type="number"/>
+            </div>
+            <div class="col col-md-3">
+                <label> Random State </label>
+                <input id="random_state" class="form-control" value="3" type="number"/>
+            </div>
+        </div>
+        <br/>
+        <button id="kmeans_button" class="btn btn-primary"> Run</button>
+        <div id="kmeans_result" style="display:none">
+            <label> Characteristics </label>
+            <canvas id="kmeans_params"></canvas>
+            <hr/>
+            <label> Documents per Cluster </label>
+            <canvas id="count_chart"></canvas>
+            <hr/>
+            <label> Labeled Documents </label>
+            <canvas id="label_count_chart"></canvas>
+        </div>
+    </div>
+    <div id="ldm_div">
+        <div class="row">
+
+        </div>
+    </div>
+    <div id="spinner_div" style="display: none;" align="center">
+        <img src="{% static 'images/big_spinner.gif' %}"/>
+    </div>
 {% endblock %}
