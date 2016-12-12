@@ -6,7 +6,7 @@
     <script>
         $(document).ready(function () {
             $("#classify").click(function () {
-                $("#pi_chart").remove();
+                $("#results").html('');
                 $.ajax({
                     csrfmiddlewaretoken: $("[name='csrfmiddlewaretoken']").val(),
                     url: '/user_news_classification/',
@@ -17,8 +17,8 @@
                     },
                     success: function (response) {
                         $("#results").append("<canvas id='pi_chart'></canvas>");
-                        makeChart(response.class_names, response.scores)
                         $("#results").show();
+                        makeChart(response.class_names, response.scores)
                     }
                 })
             });
@@ -33,13 +33,27 @@
                             {
                                 data: scores,
                                 backgroundColor: [
-                                    "#19b743",
-                                    "#195eb7",
-                                    "#ede909",
-                                    "#ed2709",
-                                    "#aced09",
-                                    "#9d09ed",
-                                    "#1cefb0"
+                                    "#0000FF",
+                                    "#8A2BE2",
+                                    "#A52A2A",
+                                    "#DEB887",
+                                    "#5F9EA0",
+                                    "#7FFF00",
+                                    "#D2691E",
+                                    "#FF7F50",
+                                    "#6495ED",
+                                    "#FFF8DC",
+                                    "#DC143C",
+                                    "#00FFFF",
+                                    "#00008B",
+                                    "#008B8B",
+                                    "#B8860B",
+                                    "#006400",
+                                    "#8B008B",
+                                    "#00BFFF",
+                                    "#FF1493",
+                                    "#ADFF2F"
+
                                 ],
                             }
                         ]

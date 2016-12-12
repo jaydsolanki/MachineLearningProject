@@ -10,8 +10,27 @@ from __future__ import unicode_literals
 from django.db import models
 
 
+class AlchemyNews(models.Model):
+    content = models.CharField(max_length=1024, blank=True, null=True)
+    category = models.CharField(max_length=25, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'alchemy_news'
+
+
+class AlchemyNewsClassification(models.Model):
+    alchemy_news = models.ForeignKey(AlchemyNews, models.DO_NOTHING, blank=True, null=True)
+    category = models.IntegerField(blank=True, null=True)
+    score = models.FloatField(blank=True, null=True)
+    algorithm = models.CharField(max_length=25, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'alchemy_news_classification'
+
+
 class AuthGroup(models.Model):
-    id = models.IntegerField(primary_key=True)  # AutoField?
     name = models.CharField(unique=True, max_length=80)
 
     class Meta:
@@ -20,7 +39,6 @@ class AuthGroup(models.Model):
 
 
 class AuthGroupPermissions(models.Model):
-    id = models.IntegerField(primary_key=True)  # AutoField?
     group = models.ForeignKey(AuthGroup, models.DO_NOTHING)
     permission = models.ForeignKey('AuthPermission', models.DO_NOTHING)
 
@@ -31,10 +49,9 @@ class AuthGroupPermissions(models.Model):
 
 
 class AuthPermission(models.Model):
-    id = models.IntegerField(primary_key=True)  # AutoField?
+    name = models.CharField(max_length=255)
     content_type = models.ForeignKey('DjangoContentType', models.DO_NOTHING)
     codename = models.CharField(max_length=100)
-    name = models.CharField(max_length=255)
 
     class Meta:
         managed = False
@@ -43,17 +60,16 @@ class AuthPermission(models.Model):
 
 
 class AuthUser(models.Model):
-    id = models.IntegerField(primary_key=True)  # AutoField?
     password = models.CharField(max_length=128)
     last_login = models.DateTimeField(blank=True, null=True)
-    is_superuser = models.BooleanField()
+    is_superuser = models.IntegerField()
+    username = models.CharField(unique=True, max_length=150)
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
     email = models.CharField(max_length=254)
-    is_staff = models.BooleanField()
-    is_active = models.BooleanField()
+    is_staff = models.IntegerField()
+    is_active = models.IntegerField()
     date_joined = models.DateTimeField()
-    username = models.CharField(unique=True, max_length=150)
 
     class Meta:
         managed = False
@@ -61,7 +77,6 @@ class AuthUser(models.Model):
 
 
 class AuthUserGroups(models.Model):
-    id = models.IntegerField(primary_key=True)  # AutoField?
     user = models.ForeignKey(AuthUser, models.DO_NOTHING)
     group = models.ForeignKey(AuthGroup, models.DO_NOTHING)
 
@@ -72,7 +87,6 @@ class AuthUserGroups(models.Model):
 
 
 class AuthUserUserPermissions(models.Model):
-    id = models.IntegerField(primary_key=True)  # AutoField?
     user = models.ForeignKey(AuthUser, models.DO_NOTHING)
     permission = models.ForeignKey(AuthPermission, models.DO_NOTHING)
 
@@ -83,14 +97,13 @@ class AuthUserUserPermissions(models.Model):
 
 
 class DjangoAdminLog(models.Model):
-    id = models.IntegerField(primary_key=True)  # AutoField?
+    action_time = models.DateTimeField()
     object_id = models.TextField(blank=True, null=True)
     object_repr = models.CharField(max_length=200)
-    action_flag = models.PositiveSmallIntegerField()
+    action_flag = models.SmallIntegerField()
     change_message = models.TextField()
     content_type = models.ForeignKey('DjangoContentType', models.DO_NOTHING, blank=True, null=True)
     user = models.ForeignKey(AuthUser, models.DO_NOTHING)
-    action_time = models.DateTimeField()
 
     class Meta:
         managed = False
@@ -98,7 +111,6 @@ class DjangoAdminLog(models.Model):
 
 
 class DjangoContentType(models.Model):
-    id = models.IntegerField(primary_key=True)  # AutoField?
     app_label = models.CharField(max_length=100)
     model = models.CharField(max_length=100)
 
@@ -109,7 +121,6 @@ class DjangoContentType(models.Model):
 
 
 class DjangoMigrations(models.Model):
-    id = models.IntegerField(primary_key=True)  # AutoField?
     app = models.CharField(max_length=255)
     name = models.CharField(max_length=255)
     applied = models.DateTimeField()
@@ -130,19 +141,29 @@ class DjangoSession(models.Model):
 
 
 class LiveNews(models.Model):
-    title = models.TextField(primary_key=True, blank=True, null=False)
-    published_date = models.DateField(primary_key=True, blank=True, null=False)
+    title = models.CharField(max_length=1000, blank=True, null=True)
+    published_date = models.DateField(blank=True, null=True)
     published_time = models.TimeField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
 
     class Meta:
         managed = False
         db_table = 'live_news'
-        unique_together = (('title', 'published_date'),)
+
+
+class LiveNewsClassification(models.Model):
+    live_news = models.ForeignKey(LiveNews, models.DO_NOTHING, blank=True, null=True)
+    category = models.IntegerField(blank=True, null=True)
+    score = models.FloatField(blank=True, null=True)
+    algorithm = models.CharField(max_length=25, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'live_news_classification'
 
 
 class MlModels(models.Model):
-    id = models.CharField(primary_key=True, max_length=255, blank=True, null=False)
+    id = models.CharField(primary_key=True, max_length=255)
     model = models.TextField(blank=True, null=True)
 
     class Meta:

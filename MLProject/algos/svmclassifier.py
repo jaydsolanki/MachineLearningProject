@@ -1,16 +1,19 @@
+# from getdata import *
 from .getdata import *
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics import recall_score
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
-# from sklearn.metrics import zero_one_score # NOT FOUND
 from sklearn.metrics import precision_score
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.linear_model import SGDClassifier
 from sklearn import metrics
 import numpy as np
-from NewsGroups20.models import *
-from NewsGroups20.ml_models import *
+import pickle
+import os
+
+test_data = get_test_data(random_state=42)
+train_data = get_train_data(random_state=42)
 
 
 def train(train_data, ngram_range=(1,1), learning_rate=0.0001, num_iterations=5):
@@ -53,13 +56,13 @@ def test_tf_idf(test_data, clf,tfidf_transformer, count_vect):
 
 
 def get_metrics_for_roc(algo_type,ngram_range,learning_rate, num_iterations,target_class_index):
-    test_data = get_test_data(random_state=42)
+    global test_data
     if algo_type=='word_count':
         algo='wc'
     elif algo_type=='tfidf':
         algo='tfidf'
     model_id = "svm_"+algo+"_" + str(ngram_range[0]) + "_" + str(ngram_range[1]) + "_" + str(learning_rate) + "_" + str(num_iterations)
-    model = retrieve_from_db(model_id)
+    model = pickle.load(open('algos/'+model_id,'rb'))
     clf = model.param1
     if algo == 'wc':
         count_vect = model.param2
@@ -77,40 +80,47 @@ def get_metrics_for_roc(algo_type,ngram_range,learning_rate, num_iterations,targ
 
 
 def make_model(ngram_range, learning_rate, num_iterations):
+    global train_data
+    global test_data
     model_id = "svm_wc_"+str(ngram_range[0])+"_"+str(ngram_range[1])+"_"+str(learning_rate)+"_"+str(num_iterations)
-    model = retrieve_from_db(model_id)
-    if model:
-        clf = model.param1
-        count_vect = model.param2
-    else:
-        train_data = get_train_data(random_state=42)
-        clf, count_vect = train(train_data, ngram_range=ngram_range, learning_rate=learning_rate,num_iterations=num_iterations)
-        pow = PickleObjectWrapper()
-        pow.param1 = clf
-        pow.param2 = count_vect
-        dump_to_db(model_id, pow)
-    test_data = get_test_data(random_state=42)
+    if os.path.exists('algos/'+model_id):
+        pow = pickle.load(open('algos/'+model_id,'rb'))
+        return test(test_data, pow.param1,pow.param2)
+    clf, count_vect = train(train_data, ngram_range=ngram_range, learning_rate=learning_rate,num_iterations=num_iterations)
+    pow = PickleObjectWrapper()
+    pow.param1 = clf
+    pow.param2 = count_vect
+    f = open('algos/'+model_id, 'wb')
+    pickle.dump(pow, f)
+    f.close()
     predicted, cnf_matrix, recall, precision, accuracy, error_rate = test(test_data, clf, count_vect)
     return predicted, cnf_matrix, recall, precision, accuracy, error_rate
 
 
 def make_model_tf_idf(ngram_range, learning_rate, num_iterations):
+    global train_data
+    global test_data
     model_id = "svm_tfidf_"+str(ngram_range[0])+"_"+str(ngram_range[1])+"_"+str(learning_rate)+"_"+str(num_iterations)
-    model = retrieve_from_db(model_id)
-    if model:
-        clf = model.param1
-        tfidf_transformer = model.param2
-        count_vect = model.param3
-    else:
-        train_data = get_train_data(random_state=42)
-        clf, tfidf_transformer, count_vect = train_with_tf_idf(train_data, ngram_range=ngram_range,learning_rate=learning_rate,num_iterations=num_iterations)
-        pow = PickleObjectWrapper()
-        pow.param1 = clf
-        pow.param2 = tfidf_transformer
-        pow.param3 = count_vect
-        dump_to_db(model_id, pow)
-    test_data = get_test_data(random_state=42)
+    if os.path.exists('algos/'+model_id):
+        pow = pickle.load(open('algos/'+model_id,'rb'))
+        return test_tf_idf(test_data, pow.param1,pow.param2,pow.param3)
+    clf, tfidf_transformer, count_vect = train_with_tf_idf(train_data, ngram_range=ngram_range,learning_rate=learning_rate,num_iterations=num_iterations)
+    pow = PickleObjectWrapper()
+    pow.param1 = clf
+    pow.param2 = tfidf_transformer
+    pow.param3 = count_vect
+    f = open('algos/'+model_id, 'wb')
+    pickle.dump(pow, f)
+    f.close()
     predicted, cnf_matrix, recall, precision, accuracy, error_rate = test_tf_idf(test_data, clf,tfidf_transformer, count_vect)
     return predicted, cnf_matrix, recall, precision, accuracy, error_rate
 
 
+class PickleObjectWrapper:
+    def __init__(self):
+        self.param1 = None
+        self.param2 = None
+        self.param3 = None
+        self.param4 = None
+        self.param5 = None
+        self.param6 = None

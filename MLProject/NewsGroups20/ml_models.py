@@ -4,6 +4,16 @@ import pickle
 from .models import *
 
 
+class PickleObjectWrapper:
+    def __init__(self):
+        self.param1 = None
+        self.param2 = None
+        self.param3 = None
+        self.param4 = None
+        self.param5 = None
+        self.param6 = None
+
+
 def object_to_pickle_bytes(obj):
     sio = BytesIO()
     pickle._dump(obj, sio)
@@ -35,14 +45,5 @@ def retrieve_from_db(model_id):
         model = pickle.load(sio)
     return model
 
-
-class PickleObjectWrapper:
-    def __init__(self):
-        self.param1 = None
-        self.param2 = None
-        self.param3 = None
-        self.param4 = None
-        self.param5 = None
-        self.param6 = None
 
 

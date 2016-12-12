@@ -9,7 +9,7 @@ from io import BytesIO
 import base64
 import algos.get_predictions_user_input as user_news
 from django.views.decorators.csrf import csrf_exempt
-from .models import LiveNews
+from .models import *
 
 
 def index(request):
@@ -61,13 +61,60 @@ def clustering(request):
     return render(request, 'clustering.html', context)
 
 
+def alchemy_api_search(request):
+    categories = ["atheism",
+                "christian",
+                "computer graphics",
+                "medicine",
+                "Microsoft",
+                "IBM",
+                "mac",
+                "Automobiles",
+                "motorcycles",
+                "baseball",
+                "hockey",
+                "guns",
+                "mideast",
+                "cryptography",
+                "electronics"]
+    context = {"title": "Alchemy API Test Results", "categories": categories}
+    return render(request, 'alchemy_api_search.html', context)
+
+
 def alchemy_api_test_results(request):
-    return render(request, "index.html", {"title":"Alchemy API Test Results"})
+    alchemy_news = AlchemyNews.objects.filter(category=request.POST['category'])
+    result = []
+    for news in alchemy_news:
+        scores_svm = AlchemyNewsClassification.objects.filter(alchemy_news_id=news.id, algorithm='svm').values_list('category','score')
+        scores_with_labels_svm_1 = map(lambda x: (total_categories[x[0]], x[1]), scores_svm)
+        scores_with_labels_svm = []
+        for i in scores_with_labels_svm_1:
+            scores_with_labels_svm.append([i[0],i[1]])
+        scores_nb = AlchemyNewsClassification.objects.filter(alchemy_news_id=news.id, algorithm='naive_bayes').values_list('category','score')
+        scores_with_labels_nb_1 = map(lambda x: (total_categories[x[0]], x[1]), scores_nb)
+        scores_with_labels_nb = []
+        for i in scores_with_labels_nb_1:
+            scores_with_labels_nb.append([i[0],i[1]])
+        result.append({"content": news.content, "category": news.category, "scores_svm": scores_with_labels_svm, "scores_nb": scores_with_labels_nb})
+    return render(request, "alchemy_api.html", {"title":"Alchemy API Test Results", "news": result})
 
 
 def live_news(request):
-    LiveNews
-    return render(request, "index.html", {"title":"Live News"})
+    live_news_objs = LiveNews.objects.all()
+    result = []
+    for news in live_news_objs:
+        scores_svm = LiveNewsClassification.objects.filter(live_news_id=news.id, algorithm='svm').values_list('category','score')
+        scores_with_labels_svm_1 = map(lambda x: (total_categories[x[0]], x[1]), scores_svm)
+        scores_with_labels_svm = []
+        for i in scores_with_labels_svm_1:
+            scores_with_labels_svm.append([i[0],i[1]])
+        scores_nb = LiveNewsClassification.objects.filter(live_news_id=news.id, algorithm='naive_bayes').values_list('category','score')
+        scores_with_labels_nb_1 = map(lambda x: (total_categories[x[0]], x[1]), scores_nb)
+        scores_with_labels_nb = []
+        for i in scores_with_labels_nb_1:
+            scores_with_labels_nb.append([i[0],i[1]])
+        result.append({"content": news.description, "title": news.title, "scores_svm": scores_with_labels_svm, "scores_nb": scores_with_labels_nb})
+    return render(request, "live_news.html", {"title":"Live News", "news": result})
 
 
 def classify_news(request):
@@ -124,11 +171,11 @@ def user_news_classification(request):
         class_dict = user_news.get_predictions(classifier, news)
         class_names = []
         scores = []
-        count = 5
+        count = 20
         for data in class_dict:
             count-=1
             class_names.append(total_categories[data[0]])
-            scores.append(data[1])
+            scores.append(round(data[1]*100,2))
             if count==0:
                 break
         return HttpResponse(status=200, content_type="application/json", content=json.dumps({"scores": scores, "class_names": class_names}))
