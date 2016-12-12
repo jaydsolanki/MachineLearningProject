@@ -6,6 +6,34 @@
     <script>
         $(document).ready(function () {
 
+            $("#lda_button").click(function () {
+                $("#spinner_div").show();
+                {#                $("#lda_div").hide();#}
+                $("#lda_results").html('');
+                $.ajax({
+                    url: '/lda/',
+                    type: 'post',
+                    data: {
+                        num_features: $("#num_features_lda").val(),
+                        top_words: $("#top_words").val()
+                    },
+                    success: function (response) {
+                        $("#lda_results").show();
+                        for(var i=0; i<response.charts.length; i++){
+                            $("#lda_results").append("<img src='data:application/octet;base64," + response.charts[i] + "'/>");
+                        }
+                    },
+                    error: function (response) {
+                        alert(JSON.stringify(response));
+                    },
+                    complete: function () {
+                        $("#lda_div").show();
+                        $("#kmeans_div").hide();
+                        $("#spinner_div").hide();
+                    }
+                })
+            });
+
             $("#kmeans_button").click(function () {
 
                 $("#kmeans_result").html('');
@@ -188,12 +216,22 @@
                     }
                 });
 
-                $("#algo").change(function(){
+
+            }
+
+            $("#algo").change(function () {
+                if ($(this).val() == "lda") {
                     $("#kmeans_result").hide();
                     $("#kmeans_div").hide();
-                    $("#ldm_div").show();
-                });
-            }
+                    $("#lda_div").show();
+                    $("#lda_results").hide();
+                } else {
+                    $("#kmeans_result").hide();
+                    $("#kmeans_div").show();
+                    $("#lda_div").hide();
+                    $("#lda_results").hide();
+                }
+            });
         });
     </script>
 {% endblock %}
@@ -206,9 +244,9 @@
             <label> Select Algorithm: </label>
         </div>
         <div class="col col-md-6">
-            <select class="form-control selectpicker" id="'algo">
+            <select class="form-control selectpicker" id="algo">
                 <option value="kmeans"> K Means</option>
-                <option value="ldm"> L D M</option>
+                <option value="lda"> L D A</option>
             </select>
         </div>
     </div>
@@ -238,8 +276,20 @@
             <canvas id="label_count_chart"></canvas>
         </div>
     </div>
-    <div id="ldm_div">
+    <div id="lda_div" style="display: None;">
         <div class="row">
+            <div class="col col-md-3">
+                <label> Num Features </label>
+                <input id="num_features_lda" class="form-control" value="10000" type="number"/>
+            </div>
+            <div class="col col-md-3">
+                <label> Top Words #</label>
+                <input id="top_words" class="form-control" value="10" type="number"/>
+            </div>
+        </div>
+        <br/>
+        <button id="lda_button" class="btn btn-primary"> Run</button>
+        <div id="lda_results" style="display: none;">
 
         </div>
     </div>

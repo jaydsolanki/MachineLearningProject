@@ -11,6 +11,7 @@ import algos.get_predictions_user_input as user_news
 from django.views.decorators.csrf import csrf_exempt
 from .models import *
 import algos.kmeans as kmean_clustering
+import algos.ldm as lda_clustering
 
 
 def index(request):
@@ -190,3 +191,9 @@ def user_news_classification(request):
 def kmeans(request):
     homogeneity_score, completeness_score, v_measure_score, counts, total_labels, total_count = kmean_clustering.cluster(int(request.POST.get('num_features',10000)), int(request.POST.get('random_state',3)))
     return HttpResponse(status=200, content_type='application/json', content= json.dumps({'scores': [homogeneity_score, completeness_score, v_measure_score], "counts": counts, "total_labels":total_labels, "total_count":total_count}))
+
+
+@csrf_exempt
+def lda(request):
+    data, charts = lda_clustering.topic_modelling(int(request.POST.get('num_features',10000)), int(request.POST.get('top_words',10)))
+    return HttpResponse(status=200, content_type='application/json', content= json.dumps({"data": data, "charts": charts}))

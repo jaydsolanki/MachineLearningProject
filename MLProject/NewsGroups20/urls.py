@@ -11,4 +11,5 @@ urlpatterns = [
     url(r'^roc_curve/', views.roc_curve, name="roc_curve"),
     url(r'^user_news_classification/', views.user_news_classification, name="user_news_classification"),
     url(r'^kmeans/', views.kmeans, name="kmeans"),
+    url(r'^lda/', views.lda, name="lda"),
 ]
