@@ -69,14 +69,18 @@ def alchemy_api_search(request):
                 "Microsoft",
                 "IBM",
                 "mac",
+                "Sale",
                 "Automobiles",
                 "motorcycles",
                 "baseball",
                 "hockey",
+                "politics",
                 "guns",
                 "mideast",
                 "cryptography",
-                "electronics"]
+                "electronics",
+                "space",
+                "religion"]
     context = {"title": "Alchemy API Test Results", "categories": categories}
     return render(request, 'alchemy_api_search.html', context)
 
