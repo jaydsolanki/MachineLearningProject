@@ -95,9 +95,9 @@ def cluster(num_features=10000, random_state=3):
 
     # Do the actual clustering
     if opts.minibatch:
-        km = MiniBatchKMeans(n_clusters=true_k, init='k-means++', n_init=1, init_size=1000, batch_size=1000, verbose=opts.verbose, random_state=random_state)
+        km = MiniBatchKMeans(max_iter = 1000, n_clusters=true_k, init='k-means++', n_init=1, init_size=1000, batch_size=1000, verbose=opts.verbose, random_state=random_state)
     else:
-        km = KMeans(n_clusters=true_k, init='k-means++', max_iter=100, n_init=1, verbose=opts.verbose, random_state=random_state)
+        km = KMeans(n_clusters=true_k, init='k-means++', max_iter=10000, n_init=1, verbose=opts.verbose, random_state=random_state)
 
     results = km.fit(X)
     homogeneity_score = metrics.homogeneity_score(labels, km.labels_)
