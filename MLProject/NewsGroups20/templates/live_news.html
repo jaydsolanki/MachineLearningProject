@@ -1,11 +1,16 @@
 {% extends 'base.html' %}
 
 {% block head %}
+
     {% load static %}
+    <script src="{% static "js/jQuery-ui.js" %}"></script>
+    <link rel="stylesheet" href="{% static "css/jQuery-ui.css" %}"/>
     <script src="{% static 'js/chartjs.min.js' %}"></script>
     <script>
         $(document).ready(function () {
             $("#news_tabs").tabs();
+            $("#spinner").hide();
+            $("#news_tabs").show();
         });
         function makeChart(data, id) {
             var ctx = document.getElementById(id);
@@ -57,7 +62,11 @@
 
 
 {% block content %}
-    <div id="news_tabs">
+    <div align="center" id="spinner">
+        {% load static %}
+        <img src="{% static 'images/big_spinner.gif' %}"/>
+    </div>
+    <div id="news_tabs" style="display: none">
         <ul>
             {% for category in total_categories %}
                 <li><a href="#tabs{{ forloop.counter0 }}">{{ category }}</a></li>
